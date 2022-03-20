@@ -220,7 +220,7 @@ ${codeBlock.code.rich_text[0].text.content}
     return EOL_MD.concat(
       '#'.repeat(headingLevel),
       ' ',
-      this.parseRichTexts(headingBlock[headingBlock.type].text),
+      this.parseRichTexts(headingBlock[headingBlock.type].rich_text),
       EOL_MD
     );
   }
