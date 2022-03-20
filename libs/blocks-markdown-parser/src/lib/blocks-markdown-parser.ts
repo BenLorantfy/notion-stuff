@@ -25,7 +25,7 @@ import type {
   ToDoBlock,
   ToggleBlock,
   VideoBlock,
-} from '@notion-stuff/v4-types';
+} from '@benlorantfy/notion-types';
 import { processExternalVideoUrl } from './external-video.util';
 
 const EOL_MD = '\n';
@@ -165,11 +165,11 @@ export class NotionBlocksMarkdownParser {
 
     if (
       this.parserOptions.emptyParagraphToNonBreakingSpace &&
-      paragraphBlock.paragraph.text.length === 0
+      paragraphBlock.paragraph.rich_text.length === 0
     ) {
       text = '&nbsp;';
     } else {
-      text = this.parseRichTexts(paragraphBlock.paragraph.text);
+      text = this.parseRichTexts(paragraphBlock.paragraph.rich_text);
     }
 
     return EOL_MD.concat(text, EOL_MD);
@@ -177,13 +177,13 @@ export class NotionBlocksMarkdownParser {
 
   parseCodeBlock(codeBlock: CodeBlock): string {
     return `\`\`\`${codeBlock.code.language.toLowerCase() || ''}
-${(codeBlock.code.text[0] as RichTextText).text.content}
+${codeBlock.code.rich_text[0].text.content}
 \`\`\``.concat(EOL_MD);
   }
 
   parseQuoteBlock(quoteBlock: QuoteBlock): string {
     return EOL_MD.concat(
-      `> ${this.parseRichTexts(quoteBlock.quote.text)}`,
+      `> ${this.parseRichTexts(quoteBlock.quote.rich_text)}`,
       EOL_MD
     );
   }
@@ -192,7 +192,7 @@ ${(codeBlock.code.text[0] as RichTextText).text.content}
     const callout = `<div notion-callout>
   {{icon}}
   <span notion-callout-text>
-    ${this.parseRichTexts(calloutBlock.callout.text)}
+    ${this.parseRichTexts(calloutBlock.callout.rich_text)}
   </span>
 </div>`;
 
@@ -227,28 +227,28 @@ ${(codeBlock.code.text[0] as RichTextText).text.content}
 
   parseBulletedListItems(bulletedListItemBlock: BulletedListItemBlock): string {
     return '* '.concat(
-      this.parseRichTexts(bulletedListItemBlock.bulleted_list_item.text),
+      this.parseRichTexts(bulletedListItemBlock.bulleted_list_item.rich_text),
       EOL_MD
     );
   }
 
   parseNumberedListItems(numberedListItemBlock: NumberedListItemBlock): string {
     return '1. '.concat(
-      this.parseRichTexts(numberedListItemBlock.numbered_list_item.text),
+      this.parseRichTexts(numberedListItemBlock.numbered_list_item.rich_text),
       EOL_MD
     );
   }
 
   parseTodoBlock(todoBlock: ToDoBlock): string {
     return `- [${todoBlock.to_do.checked ? 'x' : ' '}] `.concat(
-      this.parseRichTexts(todoBlock.to_do.text),
+      this.parseRichTexts(todoBlock.to_do.rich_text),
       EOL_MD
     );
   }
 
   parseToggleBlock(toggleBlock: ToggleBlock): string {
     return `<details><summary>${this.parseRichTexts(
-      toggleBlock.toggle.text
+      toggleBlock.toggle.rich_text
     )}</summary>{{childBlock}}</details>`;
   }
 

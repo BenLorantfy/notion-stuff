@@ -113,7 +113,7 @@ export type LinkToPageBlock = ExtractedBlockType<'link_to_page'>;
 export type UnsupportedBlock = ExtractedBlockType<'unsupported'>;
 
 /** RichText **/
-export type RichText = ParagraphBlock['paragraph']['text'][number];
+export type RichText = ParagraphBlock['paragraph']['rich_text'][number];
 
 export type Annotations = RichText['annotations'];
 
@@ -150,7 +150,7 @@ export type FileWithCaption = Omit<ExtractedFile<'file'>, 'caption'> & {
 /** Callout */
 export type CalloutIcon = CalloutBlock['callout']['icon'];
 
-export type CalloutIconType = CalloutIcon['type'];
+export type CalloutIconType = Exclude<CalloutIcon, null>['type'];
 
 export type ExtractedCalloutIcon<TType extends CalloutIconType> = Extract<
   CalloutIcon,
