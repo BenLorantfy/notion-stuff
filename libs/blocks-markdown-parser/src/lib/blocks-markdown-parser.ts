@@ -63,96 +63,93 @@ export class NotionBlocksMarkdownParser {
 
   parse(blocks: Blocks, depth = 0): string {
     return blocks
-      .reduce((markdown, childBlock) => {
+      .reduce((markdown, childBlock) => {        
+        const prefix = ' '.repeat(depth);
+        
         let childBlockString = '';
         if (childBlock.has_children && childBlock[childBlock.type].children) {
-          childBlockString = ' '
-            .repeat(depth)
-            .concat(
-              childBlockString,
-              this.parse(childBlock[childBlock.type].children, depth + 2)
-            );
+          childBlockString = this.parse(childBlock[childBlock.type].children, depth + 2);
         }
 
         if (childBlock.type === 'unsupported') {
-          markdown += 'NotionAPI Unsupported'.concat(
+          markdown += `${prefix}NotionAPI Unsupported`.concat(
             EOL_MD.repeat(2),
             childBlockString
           );
         }
 
         if (childBlock.type === 'paragraph') {
-          markdown += this.parseParagraph(childBlock).concat(childBlockString);
+          markdown += `${prefix}${this.parseParagraph(childBlock)}${childBlockString}`;
         }
 
         if (childBlock.type === 'code') {
-          markdown += this.parseCodeBlock(childBlock).concat(childBlockString);
+          markdown += `${prefix}${this.parseCodeBlock(childBlock)}${childBlockString}`;
         }
 
         if (childBlock.type === 'quote') {
-          markdown += this.parseQuoteBlock(childBlock).concat(childBlockString);
+          markdown += `${prefix}${this.parseQuoteBlock(childBlock)}${childBlockString}`;
         }
 
         if (childBlock.type === 'callout') {
           markdown +=
-            this.parseCalloutBlock(childBlock).concat(childBlockString);
+            `${prefix}${this.parseCalloutBlock(childBlock)}${childBlockString}`;
         }
 
         if (childBlock.type.startsWith('heading_')) {
           const headingLevel = Number(childBlock.type.split('_')[1]);
-          markdown += this.parseHeading(
+          markdown += `${prefix}${this.parseHeading(
             childBlock as HeadingBlock,
             headingLevel
-          ).concat(childBlockString);
+          )}${childBlockString}`;
         }
 
         if (childBlock.type === 'bulleted_list_item') {
           markdown +=
-            this.parseBulletedListItems(childBlock).concat(childBlockString);
+            `${prefix}${this.parseBulletedListItems(childBlock)}${childBlockString}`;
         }
 
         if (childBlock.type === 'numbered_list_item') {
           markdown +=
-            this.parseNumberedListItems(childBlock).concat(childBlockString);
+            `${prefix}${this.parseNumberedListItems(childBlock)}${childBlockString}`;
         }
 
         if (childBlock.type === 'to_do') {
-          markdown += this.parseTodoBlock(childBlock).concat(childBlockString);
+          markdown += `${prefix}${this.parseTodoBlock(childBlock)}${childBlockString}`;
         }
 
         if (childBlock.type === 'toggle') {
-          markdown += this.parseToggleBlock(childBlock).replace(
+          markdown += `${prefix}${this.parseToggleBlock(childBlock).replace(
             '{{childBlock}}',
             childBlockString
-          );
+          )}`;
         }
 
         if (childBlock.type === 'image') {
-          markdown += this.parseImageBlock(childBlock).concat(childBlockString);
+          markdown += `${prefix}${this.parseImageBlock(childBlock)}${childBlockString}`;
         }
 
         if (childBlock.type === 'embed') {
-          markdown += this.parseEmbedBlock(childBlock).concat(childBlockString);
+          markdown += `${prefix}${this.parseEmbedBlock(childBlock)}${childBlockString}`;
         }
 
         if (childBlock.type === 'audio') {
-          markdown += this.parseAudioBlock(childBlock).concat(childBlockString);
+          markdown += `${prefix}${this.parseAudioBlock(childBlock)}${childBlockString}`;
         }
 
         if (childBlock.type === 'video') {
-          markdown += this.parseVideoBlock(childBlock).concat(childBlockString);
+          markdown += `${prefix}${this.parseVideoBlock(childBlock)}${childBlockString}`;
         }
 
         if (childBlock.type === 'file') {
-          markdown += this.parseFileBlock(childBlock).concat(childBlockString);
+          markdown += `${prefix}${this.parseFileBlock(childBlock)}${childBlockString}`;
         }
 
         if (childBlock.type === 'pdf') {
-          markdown += this.parsePdfBlock(childBlock).concat(childBlockString);
+          markdown += `${prefix}${this.parsePdfBlock(childBlock)}${childBlockString}`;
         }
 
         if (childBlock.type === 'divider') {
-          markdown += EOL_MD.concat('---', EOL_MD, childBlockString);
+          markdown += `${prefix}${EOL_MD}---${EOL_MD}${childBlockString}`;
         }
 
         return markdown;
