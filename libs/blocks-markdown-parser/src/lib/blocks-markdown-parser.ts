@@ -35,6 +35,18 @@ export interface NotionBlocksMarkdownParserOptions {
    * Use <figure> and <figcaption>
    */
   imageAsFigure: boolean;
+
+  /**
+   * Adds image size to end of markdown
+   * See: https://stackoverflow.com/a/21242579
+   */
+  addImageSizeToAltText: boolean;
+
+  /**
+   * Must be provided if you set `addImageSizeToAltText` to true
+   */
+  getImageSize: (url: string) => Promise<{ width: number, height: number }>;
+
   /**
    * When a paragraphBlock#text is empty, render a &nbsp;
    */
@@ -61,100 +73,100 @@ export class NotionBlocksMarkdownParser {
     return this.instance;
   }
 
-  parse(blocks: Blocks, depth = 0): string {
-    return blocks
-      .reduce((markdown, childBlock) => {        
-        const prefix = ' '.repeat(depth);
+  async parse(blocks: Blocks, depth = 0): Promise<string> {
+    let markdown = '';
+
+    for (let childBlock of blocks) {
+      const prefix = ' '.repeat(depth);
         
-        let childBlockString = '';
-        if (childBlock.has_children && childBlock[childBlock.type].children) {
-          childBlockString = this.parse(childBlock[childBlock.type].children, depth + 2);
-        }
+      let childBlockString = '';
+      if (childBlock.has_children && childBlock[childBlock.type].children) {
+        childBlockString = await this.parse(childBlock[childBlock.type].children, depth + 2);
+      }
 
-        if (childBlock.type === 'unsupported') {
-          markdown += `${prefix}NotionAPI Unsupported`.concat(
-            EOL_MD.repeat(2),
-            childBlockString
-          );
-        }
+      if (childBlock.type === 'unsupported') {
+        markdown += `${prefix}NotionAPI Unsupported`.concat(
+          EOL_MD.repeat(2),
+          childBlockString
+        );
+      }
 
-        if (childBlock.type === 'paragraph') {
-          markdown += `${prefix}${this.parseParagraph(childBlock)}${childBlockString}`;
-        }
+      if (childBlock.type === 'paragraph') {
+        markdown += `${prefix}${this.parseParagraph(childBlock)}${childBlockString}`;
+      }
 
-        if (childBlock.type === 'code') {
-          markdown += `${prefix}${this.parseCodeBlock(childBlock)}${childBlockString}`;
-        }
+      if (childBlock.type === 'code') {
+        markdown += `${prefix}${this.parseCodeBlock(childBlock)}${childBlockString}`;
+      }
 
-        if (childBlock.type === 'quote') {
-          markdown += `${prefix}${this.parseQuoteBlock(childBlock)}${childBlockString}`;
-        }
+      if (childBlock.type === 'quote') {
+        markdown += `${prefix}${this.parseQuoteBlock(childBlock)}${childBlockString}`;
+      }
 
-        if (childBlock.type === 'callout') {
-          markdown +=
-            `${prefix}${this.parseCalloutBlock(childBlock)}${childBlockString}`;
-        }
+      if (childBlock.type === 'callout') {
+        markdown +=
+          `${prefix}${this.parseCalloutBlock(childBlock)}${childBlockString}`;
+      }
 
-        if (childBlock.type.startsWith('heading_')) {
-          const headingLevel = Number(childBlock.type.split('_')[1]);
-          markdown += `${prefix}${this.parseHeading(
-            childBlock as HeadingBlock,
-            headingLevel
-          )}${childBlockString}`;
-        }
+      if (childBlock.type.startsWith('heading_')) {
+        const headingLevel = Number(childBlock.type.split('_')[1]);
+        markdown += `${prefix}${this.parseHeading(
+          childBlock as HeadingBlock,
+          headingLevel
+        )}${childBlockString}`;
+      }
 
-        if (childBlock.type === 'bulleted_list_item') {
-          markdown +=
-            `${prefix}${this.parseBulletedListItems(childBlock)}${childBlockString}`;
-        }
+      if (childBlock.type === 'bulleted_list_item') {
+        markdown +=
+          `${prefix}${this.parseBulletedListItems(childBlock)}${childBlockString}`;
+      }
 
-        if (childBlock.type === 'numbered_list_item') {
-          markdown +=
-            `${prefix}${this.parseNumberedListItems(childBlock)}${childBlockString}`;
-        }
+      if (childBlock.type === 'numbered_list_item') {
+        markdown +=
+          `${prefix}${this.parseNumberedListItems(childBlock)}${childBlockString}`;
+      }
 
-        if (childBlock.type === 'to_do') {
-          markdown += `${prefix}${this.parseTodoBlock(childBlock)}${childBlockString}`;
-        }
+      if (childBlock.type === 'to_do') {
+        markdown += `${prefix}${this.parseTodoBlock(childBlock)}${childBlockString}`;
+      }
 
-        if (childBlock.type === 'toggle') {
-          markdown += `${prefix}${this.parseToggleBlock(childBlock).replace(
-            '{{childBlock}}',
-            childBlockString
-          )}`;
-        }
+      if (childBlock.type === 'toggle') {
+        markdown += `${prefix}${this.parseToggleBlock(childBlock).replace(
+          '{{childBlock}}',
+          childBlockString
+        )}`;
+      }
 
-        if (childBlock.type === 'image') {
-          markdown += `${prefix}${this.parseImageBlock(childBlock)}${childBlockString}`;
-        }
+      if (childBlock.type === 'image') {
+        markdown += `${prefix}${await this.parseImageBlock(childBlock)}${childBlockString}`;
+      }
 
-        if (childBlock.type === 'embed') {
-          markdown += `${prefix}${this.parseEmbedBlock(childBlock)}${childBlockString}`;
-        }
+      if (childBlock.type === 'embed') {
+        markdown += `${prefix}${this.parseEmbedBlock(childBlock)}${childBlockString}`;
+      }
 
-        if (childBlock.type === 'audio') {
-          markdown += `${prefix}${this.parseAudioBlock(childBlock)}${childBlockString}`;
-        }
+      if (childBlock.type === 'audio') {
+        markdown += `${prefix}${this.parseAudioBlock(childBlock)}${childBlockString}`;
+      }
 
-        if (childBlock.type === 'video') {
-          markdown += `${prefix}${this.parseVideoBlock(childBlock)}${childBlockString}`;
-        }
+      if (childBlock.type === 'video') {
+        markdown += `${prefix}${this.parseVideoBlock(childBlock)}${childBlockString}`;
+      }
 
-        if (childBlock.type === 'file') {
-          markdown += `${prefix}${this.parseFileBlock(childBlock)}${childBlockString}`;
-        }
+      if (childBlock.type === 'file') {
+        markdown += `${prefix}${this.parseFileBlock(childBlock)}${childBlockString}`;
+      }
 
-        if (childBlock.type === 'pdf') {
-          markdown += `${prefix}${this.parsePdfBlock(childBlock)}${childBlockString}`;
-        }
+      if (childBlock.type === 'pdf') {
+        markdown += `${prefix}${this.parsePdfBlock(childBlock)}${childBlockString}`;
+      }
 
-        if (childBlock.type === 'divider') {
-          markdown += `${prefix}${EOL_MD}---${EOL_MD}${childBlockString}`;
-        }
+      if (childBlock.type === 'divider') {
+        markdown += `${prefix}${EOL_MD}---${EOL_MD}${childBlockString}`;
+      }
+    }
 
-        return markdown;
-      }, '')
-      .concat(EOL_MD);
+    return markdown.concat(EOL_MD);
   }
 
   parseParagraph(paragraphBlock: ParagraphBlock): string {
@@ -249,7 +261,7 @@ ${codeBlock.code.rich_text[0].text.content}
     )}</summary>{{childBlock}}</details>`;
   }
 
-  parseImageBlock(imageBlock: ImageBlock): string {
+  async parseImageBlock(imageBlock: ImageBlock): Promise<string> {
     const { url, caption } = this.parseFile(imageBlock.image);
     if (this.parserOptions.imageAsFigure) {
       return `
@@ -258,6 +270,20 @@ ${codeBlock.code.rich_text[0].text.content}
   <figcaption notion-figcaption>${caption}</figcaption>
 </figure>
 `.concat(EOL_MD);
+    }
+
+    if (this.parserOptions.addImageSizeToAltText) {
+      if (!this.parserOptions.getImageSize) {
+        throw new Error('parserOptions.getImageSize is required if parserOptions.addImageSizeToAltText is true')
+      }
+
+      const result = await this.parserOptions.getImageSize(url);
+
+      if (!result.width || !result.height) {
+        throw new Error("Could not find width/height for image");
+      }
+
+      return `![${caption}|${result.width}x${result.height}](${url})`.concat(EOL_MD);
     }
     return `![${caption}](${url})`.concat(EOL_MD);
   }
