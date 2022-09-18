@@ -192,7 +192,7 @@ ${codeBlock.code.rich_text[0].text.content}
 
   parseQuoteBlock(quoteBlock: QuoteBlock): string {
     return EOL_MD.concat(
-      `> ${this.parseRichTexts(quoteBlock.quote.rich_text)}`,
+      `> ${this.parseRichTexts(quoteBlock.quote.rich_text).split("\n").join("\n> ")}`,
       EOL_MD
     );
   }

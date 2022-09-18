@@ -1,6 +1,6 @@
 {
   "name": "@benlorantfy/notion-blocks-markdown-parser",
-  "version": "5.1.5",
+  "version": "5.1.7",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "license": "MIT",
