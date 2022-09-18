@@ -235,15 +235,17 @@ ${codeBlock.code.rich_text[0].text.content}
   }
 
   parseBulletedListItems(bulletedListItemBlock: BulletedListItemBlock): string {
+    // https://www.markdownguide.org/basic-syntax/#adding-elements-in-lists
     return '* '.concat(
-      this.parseRichTexts(bulletedListItemBlock.bulleted_list_item.rich_text),
+      this.parseRichTexts(bulletedListItemBlock.bulleted_list_item.rich_text).split("\n").join("\n    "),
       EOL_MD
     );
   }
 
   parseNumberedListItems(numberedListItemBlock: NumberedListItemBlock): string {
+    // https://www.markdownguide.org/basic-syntax/#adding-elements-in-lists
     return '1. '.concat(
-      this.parseRichTexts(numberedListItemBlock.numbered_list_item.rich_text),
+      this.parseRichTexts(numberedListItemBlock.numbered_list_item.rich_text).split("\n").join("\n    "),
       EOL_MD
     );
   }
